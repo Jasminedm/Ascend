@@ -1,5 +1,32 @@
-import Header from './Header';
-import Content from './Content'
+const Header = (props) => {
+  return (
+    <>
+    <h1>{props.course}</h1>
+    </>
+  )
+}
+
+const Content = (props) => {
+  return ( 
+  <>
+      <p>{props.part1} {props.exercises1}</p>
+      <p>{props.part2} {props.exercises2}</p>
+      <p>{props.part3} {props.exercises3}</p>
+
+      
+  </>
+  );
+}
+
+const Total = (props) => {
+  const { exercises1, exercises2, exercises3 } = props
+  const totalExercises = exercises1 + exercises2 + exercises3
+  return (
+    <>
+    <p>Total number of exercises {totalExercises}</p>
+    </>
+  )
+}
 
 const App = () => {
   const course = 'Half Stack application development'
@@ -21,7 +48,11 @@ const App = () => {
       part3={part3} 
       exercises3={exercises3}
       />
-      <p>Number of exercises {exercises1 + exercises2 + exercises3}</p>
+      <Total
+      exercises1={exercises1}
+      exercises2={exercises2}
+      exercises3={exercises3}
+      />
     </div>
   )
 }
