@@ -28,11 +28,7 @@ const PersonForm = ({ newName, newNumber, handleNameChange, handleNumberChange, 
 
 const Persons = ({ persons, search, handleRemove }) => {
   const filteredPersons = persons.filter((person) =>
-  person.name.toLowerCase().includes(search.toLowerCase())
-)
-
-
-
+  person.name.toLowerCase().includes(search.toLowerCase()))
 return(
   <ul>
     {filteredPersons.map((person) => (
@@ -44,11 +40,35 @@ return(
 )
 }
 
+const Notification = ({ message, isError }) => {
+  if (message === null) {
+    return null
+  }
+  const style = {
+    color: isError ? 'red' : 'green',
+    background: 'lightgrey',
+    fontSize: '20px',
+    borderStyle: 'solid',
+    borderRadius: '5px',
+    padding: '10px',
+    marginBottom: '10px'
+  }
+  return (
+    <div style={style}>
+      {message}
+    </div>
+  )
+}
+
+
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
+  const [notification, setNotification] = useState(null);
+
 
   useEffect(() => {
     personService.getAll().then(initialPersons => {
@@ -69,12 +89,15 @@ const App = () => {
   const handleRemove = (id) => {
     console.log('Removing person with id:', id);
     if(window.confirm("Are you Sure?")) {
-      personService.remove(id)
+      personService
+      .remove(id)
       .then(() => {
         setPersons(persons.filter(person => person.id !== id))
+        successNotification(`Person with id ${id} removed successfully!`);
       })
       .catch(error => {
         console.error("Error deleting person:", error)
+        successNotification('Error deleting person', true);
       })
     }
   }
@@ -82,7 +105,7 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault();
   
-    const existingPerson = persons.find((person) => person.name === newName);
+    const existingPerson = persons.find((person) => person.name.toLowerCase() === newName.toLowerCase());
   
     if (existingPerson) {
       const confirmed = window.confirm(
@@ -90,25 +113,61 @@ const App = () => {
       );
   
       if (confirmed) {
-        const updatedPerson = { ...existingPerson, number: newNumber };
+        // Check if the person still exists on the server
+        personService.getById(existingPerson.id)
+          .then(() => {
+            const updatedPerson = { ...existingPerson, number: newNumber };
   
-        personService.update(existingPerson.id, updatedPerson).then(() => {
-          setPersons(persons.map((person) =>
-            person.id === existingPerson.id ? updatedPerson : person
-          ));
-          setNewName('')
-          setNewNumber('')
-        });
+            personService
+              .update(existingPerson.id, updatedPerson)
+              .then(() => {
+                setPersons(persons.map((person) =>
+                  person.id === existingPerson.id ? updatedPerson : person
+                ));
+                setNewName('');
+                setNewNumber('');
+                successNotification(`Contact '${existingPerson.name}' updated successfully!`);
+              })
+              .catch((error) => {
+                console.error('Error updating person:', error);
+                successNotification('Error updating person', true);
+              });
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 404) {
+              // Handle 404 error (person not found on the server)
+              successNotification('Person not found on the server. Unable to update.', true);
+            } else {
+              // Handle other errors
+              console.error('Error checking person existence:', error);
+              successNotification('Error checking person existence', true);
+            }
+          });
       }
+      
     } else {
       const newPerson = { name: newName, number: newNumber, id: (persons.length + 1).toString() };
-  
-      personService.create(newPerson).then(returnedPerson => {
-        setPersons([...persons, newPerson]);
-        setNewName('')
-        setNewNumber('')
-      });
+
+      personService
+        .create(newPerson)
+        .then(returnedPerson => {
+          setPersons([...persons, newPerson]);
+          setNewName('');
+          setNewNumber('');
+          successNotification(`Person '${newPerson.name}' added successfully!`);
+        })
+        .catch(error => {
+          console.error('Error adding person:', error);
+          successNotification('Error adding person', true);
+        });
     }
+  };
+
+  const successNotification = (message, isError = false) => {
+    setNotification({ message, isError });
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
   };
     
   
@@ -116,6 +175,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification?.message} isError={notification?.isError} />
       <Filter search={search} handleSearchChange={handleSearchChange} />
       <PersonForm 
       newName={newName}
