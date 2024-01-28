@@ -1,0 +1,32 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Phonebook Backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jasminedm/Ascend.git#main"
+  },
+  "keywords": [
+    "[\"phonebook\"",
+    "\"backend\"",
+    "\"node\"",
+    "\"express\"",
+    "\"api\"]"
+  ],
+  "author": "\"Jazzy Engineer\"",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jasminedm/Ascend/issues"
+  },
+  "homepage": "https://github.com/Jasminedm/Ascend/tree/main#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^3.0.3"
+  }
+}
